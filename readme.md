@@ -351,7 +351,7 @@ for epoch in range(num_epochs):
             img_list.append(utils.make_grid(fake, nrow=10))
     print()
 ```
-输出：
+out：
 ```python
 Starting Training Loop...
 Epoch: [1/5] Step: [700/700] Loss-D: 8.8328 Loss-G: 5.1051 D(x): 0.9995 D(G(z)): [0.9989/0.0200] Time: 1m6s

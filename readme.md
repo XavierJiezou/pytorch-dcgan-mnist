@@ -1,11 +1,11 @@
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210125211852298.png)
-# 1. 学习目标
-本教程教你如何使用`dcgan`训练`mnist`数据集，生成手写数字。
-# 2. 环境配置
+# 1. Target
+Based on the mnist dataset, we will train a `dcgan` to generate new handwritten digit.
+# 2. Environment
 ## 2.1. Python
-请参考[官网](https://www.python.org/downloads/)安装。
+download: [https://www.python.org/downloads/](https://www.python.org/downloads/)
 ## 2.2. Pytorch
-请参考[官网](https://pytorch.org/get-started/locally/)安装。
+download: [https://pytorch.org/get-started/locally/](https://pytorch.org/get-started/locally/)
 ## 2.3. Jupyter notebook
 ```bash
 pip install jupyter
@@ -14,8 +14,8 @@ pip install jupyter
 ```bash
 pip install matplotlib
 ```
-# 3. 具体实现
-## 3.1. 导入模块
+# 3. Implementation
+## 3.1. Import modules
 ```python
 import os
 import time
@@ -27,24 +27,24 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 from IPython.display import HTML
 ```
-## 3.2. 设置随机种子
+## 3.2. Randomseed
 ```python
-# 设置随机种子，以便复现实验结果。
+# Set random seed for reproducibility
 torch.manual_seed(0)
 ```
-## 3.3. 超参数配置
-- **dataroot**：存放数据集文件夹所在的路径
-- **workers** ：数据加载器加载数据的线程数
-- **batch_size**：训练的批次大小。
-- **image_size**：训练图像的维度。默认是64x64。如果需要其它尺寸，必须更改$D$和$G$的结构，点击[这里](https://github.com/pytorch/examples/issues/70)查看详情
-- **nc**：输入图像的通道数。对于彩色图像是3
-- **nz**：潜在空间的长度
-- **ngf**：与通过生成器进行的特征映射的深度有关
-- **ndf**：设置通过鉴别器传播的特征映射的深度
-- **num_epochs**：训练的总轮数。训练的轮数越多，可能会导致更好的结果，但也会花费更长的时间
-- **lr**：学习率。DCGAN论文中用的是0.0002
-- **beta1**：Adam优化器的参数beta1。论文中，值为0.5
-- **ngpus**：可用的GPU数量。如果为0，代码将在CPU模式下运行；如果大于0，它将在该数量的GPU下运行
+## 3.3. Hyperparameter
+- **dataroot**：the path to the root of the dataset folder. We will talk more about the dataset in the next section
+- **workers** ：the number of worker threads for loading the data with the DataLoader
+- **batch_size**：the batch size used in training.
+- **image_size**：the spatial size of the images used for training. This implementation defaults to 64x64. If another size is desired, the structures of D and G must be changed. See [here](https://github.com/pytorch/examples/issues/70) for more details
+- **nc**：number of color channels in the input images. For color images this is 3
+- **nz**：length of latent vector
+- **ngf**：relates to the depth of feature maps carried through the generator
+- **ndf**：sets the depth of feature maps propagated through the discriminator
+- **num_epochs**：number of training epochs to run. Training for longer will probably lead to better results but will also take much longer
+- **lr**：learning rate for training. As described in the DCGAN paper, this number should be 0.0002
+- **beta1**：beta1 hyperparameter for Adam optimizers. As described in paper, this number should be 0.5
+- **ngpus**：number of GPUs available. If this is 0, code will run in CPU mode. If this number is greater than 0 it will run on that number of GPUs
 ```python
 # Root directory for dataset
 dataroot = "data/mnist"
@@ -82,8 +82,7 @@ beta1 = 0.5
 # Number of GPUs available. Use 0 for CPU mode.
 ngpu = 1
 ```
-## 3.4. 数据集
-使用`mnist`数据集，其中训练集**6**万张，测试集**1**万张，我们这里不是分类任务，而是使用`gan`的生成任务，所以就不分训练和测试了，全部图像都可以利用。
+## 3.4. Dataset
 ```python
 mnist_transform = transforms.Compose([
     transforms.Resize(image_size),
@@ -104,11 +103,11 @@ test_data = datasets.MNIST(
 dataset = train_data+test_data
 print(f'Total Size of Dataset: {len(dataset)}')
 ```
-输出：
+out：
 ```python
 Total Size of Dataset: 70000
 ```
-## 3.5. 数据加载器
+## 3.5. Dataloader
 ```python
 dataloader = DataLoader(
     dataset=dataset,
@@ -117,12 +116,11 @@ dataloader = DataLoader(
     num_workers=workers
 )
 ```
-## 3.6. 选择训练设备
-检测`cuda`是否可用，可用就用`cuda`加速，否则使用`cpu`训练。
+## 3.6. Device
 ```python
 device = torch.device('cuda:0' if (torch.cuda.is_available() and ngpu > 0) else 'cpu')
 ```
-## 3.7. 训练数据可视化
+## 3.7. Training Images Visualization
 ```python
 inputs = next(iter(dataloader))[0]
 plt.figure(figsize=(10,10), dpi=100)
@@ -132,8 +130,8 @@ inputs = utils.make_grid(inputs[:100], nrow=10)
 plt.imshow(inputs.permute(1, 2, 0))
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210125205118234.png)
-## 3.8. 权重初始化
-在`dcgan`论文中，作者指出所有模型权重应当从均值为**0**，标准差为**0.02**的正态分布中随机初始化。==但这里不建议使用，亲测使用后效果很差==。
+## 3.8. Weight Initialization
+From the DCGAN paper, the authors specify that all model weights shall be randomly initialized from a Normal distribution with mean=0, stdev=0.02. But it is not recommended to the mnist dataset.
 ```python
 def weights_init(m):
     classname = m.__class__.__name__
@@ -143,10 +141,10 @@ def weights_init(m):
         nn.init.normal_(m.weight.data, 1.0, 0.02)
         nn.init.constant_(m.bias.data, 0)
 ```
-## 3.9. 生成器
-生成器的结构：
+## 3.9. Generator
+Structure of Generator：
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210125123946836.png)
-构建生成器类：
+Code：
 ```python
 class Generator(nn.Module):
     def __init__(self, ngpu):
@@ -178,7 +176,7 @@ class Generator(nn.Module):
     def forward(self, input):
         return self.main(input)
 ```
-生成器实例化：
+Instantiation of Generator：
 ```python
 # Create the generator
 netG = Generator(ngpu).to(device)
@@ -190,8 +188,8 @@ if device.type == 'cuda' and ngpu > 1:
 # Apply the weights_init function to randomly initialize all weights to mean=0, stdev=0.2.
 # netG.apply(weights_init)
 ```
-## 3.10. 判别器
-构建判别器类：
+## 3.10. Discriminator
+Code：
 ```python
 class Discriminator(nn.Module):
     def __init__(self, ngpu):
@@ -222,7 +220,7 @@ class Discriminator(nn.Module):
     def forward(self, input):
         return self.main(input)
 ```
-判别器实例化：
+Instantiation of Discriminator：
 ```python
 # Create the Discriminator
 netD = Discriminator(ngpu).to(device)
@@ -234,7 +232,7 @@ if device.type == 'cuda' and ngpu > 1:
 # Apply the weights_init function to randomly initialize all weights to mean=0, stdev=0.2.
 # netD.apply(weights_init)
 ```
-## 3.11. 优化器和损失函数
+## 3.11. Optimizers and Loss Functions
 ```python
 # Initialize BCELoss function
 criterion = nn.BCELoss()
@@ -251,7 +249,7 @@ fake_label = 0.
 optimizerD = torch.optim.Adam(netD.parameters(), lr=lr, betas=(beta1, 0.999))
 optimizerG = torch.optim.Adam(netG.parameters(), lr=lr, betas=(beta1, 0.999))
 ```
-## 3.12. 开始训练
+## 3.12. Training
 ```python
 # Training Loop
 
@@ -362,7 +360,7 @@ Epoch: [3/5] Step: [700/700] Loss-D: 0.0355 Loss-G: 4.4222 D(x): 0.9767 D(G(z)):
 Epoch: [4/5] Step: [700/700] Loss-D: 0.9482 Loss-G: 1.9022 D(x): 0.6590 D(G(z)): [0.3345/0.1798] Time: 1m8s
 Epoch: [5/5] Step: [700/700] Loss-D: 0.0939 Loss-G: 3.1018 D(x): 0.9168 D(G(z)): [0.0025/0.0698] Time: 1m8s
 ```
-## 3.13. 训练过程中的损失变化
+## 3.13. Loss versus training iteration
 ```python
 plt.figure(figsize=(10, 5))
 plt.title("Generator and Discriminator Loss During Training")
@@ -374,7 +372,7 @@ plt.legend()
 plt.show()
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210125220249298.png)
-## 3.14. 训练过程中的D(x)和D(G(z))变化
+## 3.14. D(x) and D(G(z)) versus training iteration
 ```python
 plt.figure(figsize=(10, 5))
 plt.title("D(x) and D(G(z)) During Training")
@@ -386,7 +384,7 @@ plt.legend()
 plt.show()
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210125232842936.png)
-## 3.15. 可视化G的训练过程
+## 3.15. Visualization of G’s progression
 ```python
 fig = plt.figure(figsize=(10, 10), dpi=100)
 fig = plt.figure()
@@ -396,7 +394,7 @@ ani = animation.ArtistAnimation(fig, ims, interval=1000, repeat_delay=1000, blit
 HTML(ani.to_jshtml())
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/2021012600255757.gif#pic_center)
-# 4. 真图 vs 假图
+# 4. Real Images vs. Fake Images
 ```python
 # Grab a batch of real images from the dataloader
 real_batch = next(iter(dataloader))
@@ -416,9 +414,6 @@ plt.savefig('comparation.jpg', )
 plt.imshow(transforms.Normalize((0.1307,), (0.3081,))(img_list[-1]).permute(1, 2, 0))
 ```
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210126004054782.png)
-<center>（左边是数据集中的真图，右边是生成器生成的假图）</center>
 
-# 5. 温馨提示
-本教程使用的是**1**张`GTX 1080 Ti`的显卡，训练一个**epoch**大概`1m8s`左右。虽然实验室有**8**张卡，但没必要都用，亲测多卡训练速度反而更慢，当然我这里说的是数据并行`DataParallel`。分布式`distributed`训练的话应该会快很多，但对于初学者来说不太建议使用，因为配置很麻烦。
-# 6. 引用参考
-> [https://blog.csdn.net/qq_42951560/article/details/110308336](https://blog.csdn.net/qq_42951560/article/details/110308336)
+# 5. Cite
+> [https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html)

@@ -137,11 +137,14 @@ Epoch: [10/10] Step: [700/700] Loss-D: 1.1115 Loss-G: 2.2473 D(x): 0.7334 D(G(z)
 
 ![在这里插入图片描述](result.jpg)
 
-# 5. Cite
-> [https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html)
+# 5. Traing
+[dcgan.ipynb](dcgan.ipynb)
 
 # 6. Paper
 UNSUPERVISED REPRESENTATION LEARNING WITH DEEP CONVOLUTIONAL GENERATIVE ADVERSARIAL NETWORKS: [Download](https://papers.nips.cc/paper/5423-generative-adversarial-nets.pdf)
 
-# 7.Tips
+# 7. Cite
+> [https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html](https://pytorch.org/tutorials/beginner/dcgan_faces_tutorial.html)
+
+# 8.Tips
 For Chinese, you can look my csdn blog: [https://blog.csdn.net/qq_42951560/article/details/112199229](https://blog.csdn.net/qq_42951560/article/details/112199229)

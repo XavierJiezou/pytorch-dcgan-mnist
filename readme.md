@@ -16,10 +16,10 @@ pip install matplotlib
 ```
 # 3. Implementation
 ## 3.1. Generator
-### 3.1.1 Structure of Generator
+### 3.1.1. Structure of Generator
 
 ![在这里插入图片描述](https://img-blog.csdnimg.cn/20210125123946836.png)
-### 3.1.2 Code
+### 3.1.2. Code
 ```python
 class Generator(nn.Module):
     def __init__(self, ngpu):
